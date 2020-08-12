@@ -1,5 +1,5 @@
 FROM python:3.7-alpine
-MAINTAINER Basel H. Ashour
+LABEL maintainer="Basel H. Ashour"
 
 ENV PYTHONUNBUFFERED 1
 
