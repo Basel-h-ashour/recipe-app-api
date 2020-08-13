@@ -7,7 +7,9 @@ from core.models import Tag
 from .serializers import TagSerializer
 
 
-class TagViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class TagViewSet(viewsets.GenericViewSet,
+                 mixins.ListModelMixin,
+                 mixins.CreateModelMixin):
     """endpoint to list tags only"""
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
@@ -17,3 +19,7 @@ class TagViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     def get_queryset(self):
         """returns objects specific to authorized user"""
         return self.queryset.filter(user=self.request.user).order_by('-name')
+
+    def perform_create(self, serializer):
+        """overrides the save and adds user to it"""
+        serializer.save(user=self.request.user)
