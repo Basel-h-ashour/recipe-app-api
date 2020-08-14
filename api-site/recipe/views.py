@@ -4,35 +4,32 @@ from rest_framework.permissions import IsAuthenticated
 
 from core.models import Tag, Ingredient
 
-from .serializers import TagSerializer, IngredientSerializer
+from recipe import serializers
 
 
-class TagViewSet(viewsets.GenericViewSet,
-                 mixins.ListModelMixin,
-                 mixins.CreateModelMixin):
-    """endpoint to list tags only"""
-    serializer_class = TagSerializer
-    queryset = Tag.objects.all()
-    permission_classes = (IsAuthenticated,)
+class BaseRecipeAttrViewSet(viewsets.GenericViewSet,
+                            mixins.ListModelMixin,
+                            mixins.CreateModelMixin):
+    """Base viewset for user owned recipe attributes"""
     authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        """returns objects specific to authorized user"""
+        """Return objects for the current authenticated user only"""
         return self.queryset.filter(user=self.request.user).order_by('-name')
 
     def perform_create(self, serializer):
-        """overrides the save and adds user to it"""
+        """Create a new ingredient"""
         serializer.save(user=self.request.user)
 
 
-class IngredientViewSet(viewsets.GenericViewSet,
-                        mixins.ListModelMixin):
-    """manage ingredient endpoints"""
-    serializer_class = IngredientSerializer
-    queryset = Ingredient.objects.all()
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+class TagViewSet(BaseRecipeAttrViewSet):
+    """Manage tags in the database"""
+    queryset = Tag.objects.all()
+    serializer_class = serializers.TagSerializer
 
-    def get_queryset(self):
-        """returns objects for authenticated user only"""
-        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+class IngredientViewSet(BaseRecipeAttrViewSet):
+    """Manage ingredients in the database"""
+    queryset = Ingredient.objects.all()
+    serializer_class = serializers.IngredientSerializer
